@@ -1,0 +1,23 @@
+using telbot.Domain.Database;
+using telbot.Domain;
+using telbot.Domain.Repositories;
+using telbot.Domain.Services;
+using telbot.Domain.Database.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Telegram.Bot;
+using Telegram.Bot.Requests;
+using Telegram.Bot.Types;
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("config/Bot.json");
+
+builder.Services.AddDbContext<AppDbContext>(ServiceLifetime.Singleton);
+builder.Services.AddSingleton<UserRepository>();
+builder.Services.AddSingleton<TelegramBotHandler>();
+builder.Services.AddSingleton<TelegramService>();
+builder.Services.AddSingleton<CommandHandler>();
+builder.Services.AddControllers();
+var app = builder.Build();
+app.Services.GetRequiredService<TelegramBotHandler>().GetBot();
+app.MapControllers();
+new TelegramBotHandler(app.Configuration).SetWebHook().Wait();
+app.Run();
